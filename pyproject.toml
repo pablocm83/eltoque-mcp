@@ -1,0 +1,105 @@
+[project]
+name = "eltoque-mcp"
+version = "0.1.0"
+description = "A Model Context Protocol server providing tools to read elToque currencies rates via LLMs"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "PabloCM83", email = "PabloCM83@gmail.com" }
+]
+maintainers = [
+    { name = "PabloCM83", email = "PabloCM83@gmail.com" }
+]
+keywords = ["mcp", "llm", "automation", "currency", "eltoque"]
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.28.1",
+    "mcp[cli]>=1.27.0",
+    "pycountry>=26.2.16",
+    "pydantic>=2.13.3",
+    "pydantic-extra-types>=2.11.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.7,<0.12.0"]
+build-backend = "uv_build"
+
+[project.scripts]
+eltoque-mcp = "eltoque_mcp:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.15.12",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["README.md"]
+
+[tool.ruff.lint]
+select = [
+    "C4",     # flake8-comprehensions
+    "C90",    # mccabe
+    "D212",   # pydocstyle: multi-line docstring summary should start at the first line
+    "E",      # pycodestyle
+    "F",      # pyflakes
+    "I",      # isort
+    "PERF",   # Perflint
+    "UP",     # pyupgrade
+    "TID251", # https://docs.astral.sh/ruff/rules/banned-api/
+]
+ignore = ["PERF203"]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--strict-config",
+    "--strict-markers",
+    # "--maxfail=1",
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+xfail_strict = true
+junit_family = "xunit2"
+filterwarnings = [
+    "error",
+    # For pytest-xdist
+    'ignore::DeprecationWarning:xdist',
+]
+
+[tool.coverage.run]
+parallel = true
+data_file = "coverage/.coverage"
+source = ["src/eltoque_mcp", "tests"]
+context = '${CONTEXT}'
+relative_files = true
+
+[tool.coverage.report]
+fail_under = 100
+skip_covered = true
+show_missing = true
+ignore_errors = true
+precision = 2
+exclude_lines = [
+    "pragma: no cover",
+    "@overload",
+    'if __name__ == "__main__":',
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+
+[tool.mypy]
+strict = true
+plugins = ['pydantic.mypy']
+
+[[tool.mypy.overrides]]
+module = ["src.eltoque_mcp.*"]
+follow_untyped_imports = true
