@@ -2,9 +2,9 @@ name: Tester Multi-Python
 
 on:
   push:
-    branches: [ main ]
+    branches: [ tmp ]
   pull_request:
-    branches: [ main ]
+    branches: [ tmp ]
 
 jobs:
   test:
