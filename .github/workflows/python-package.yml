@@ -38,7 +38,7 @@ jobs:
       shell: bash
       run: |
         uv run --frozen --no-sync coverage erase
-        uv run --frozen --no-sync coverage run -m pytest -n auto
+        uv run --frozen --no-sync pytest --cov 
         uv run --frozen --no-sync coverage combine
         uv run --frozen --no-sync coverage report
 
