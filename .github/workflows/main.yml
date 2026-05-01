@@ -9,34 +9,32 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      COVERAGE_CORE: sysmon
+    
     strategy:
       fail-fast: false
       matrix:
-        # Definimos las versiones de Python
-        python-version: ["3.12", "3.13", "3.14-dev"]
+        python-version: ["3.12", "3.13", "3.14"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v4
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
       - name: Set up Python ${{ matrix.python-version }}
-        # uv descarga la versión exacta de Python si no existe
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        # --frozen asegura consistencia, pero con versiones dev/beta 
-        # a veces es necesario permitir actualizaciones si hay bugs de compatibilidad
         run: uv sync --frozen
 
       - name: Run tests with coverage
-        # Usamos variables de entorno para mitigar el error de SysMonitor en xdist
-        env:
-          COVERAGE_CORE: sysmon
         run: |
           uv run pytest --cov=./src --cov-report=xlm --cov-report=term
 
@@ -45,4 +43,5 @@ jobs:
         with:
           name: coverage-report-${{ matrix.python-version }}
           path: coverage.xml
+          if-no-files-found: warn
 
