@@ -7,45 +7,30 @@ on:
     branches: [ "tmp" ]
 
 jobs:
-  detect-packages:
-    runs-on: ubuntu-latest
-    outputs:
-      packages: ${{ steps.find-packages.outputs.packages }}
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Find Python packages
-        id: find-packages
-        working-directory: src
-        run: |
-          PACKAGES=$(find . -name pyproject.toml -exec dirname {} \; | sed 's/^\.\///' | jq -R -s -c 'split("\n")[:-1]')
-          echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
-
   test:
-    needs: [detect-packages]
-    strategy:
-      matrix:
-        package: ${{ fromJson(needs.detect-packages.outputs.packages) }}
-    name: Test ${{ matrix.package }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13", "3.14"]
+    name: Test ${{ matrix.package }}
+    # runs-on: ubuntu-latest
     steps:
+        
       - uses: actions/checkout@v6
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version-file: "src/${{ matrix.package }}/.python-version"
-
       - name: Install dependencies
-        working-directory: src/${{ matrix.package }}
-        run: uv sync --frozen --all-extras --dev
+        run: uv sync --all-extras --python ${{ matrix.python-version }}
 
       - name: Check if tests exist
         id: check-tests
-        working-directory: src/${{ matrix.package }}
         run: |
           if [ -d "tests" ] || [ -d "test" ] || grep -q "pytest" pyproject.toml; then
             echo "has-tests=true" >> $GITHUB_OUTPUT
@@ -55,5 +40,4 @@ jobs:
 
       - name: Run tests
         if: steps.check-tests.outputs.has-tests == 'true'
-        working-directory: src/${{ matrix.package }}
         run: uv run pytest
