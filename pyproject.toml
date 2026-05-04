@@ -4,12 +4,8 @@ version = "0.1.0"
 description = "A Model Context Protocol server providing tools to read elToque currencies rates via LLMs"
 readme = "README.md"
 license = { text = "MIT" }
-authors = [
-    { name = "PabloCM83", email = "PabloCM83@gmail.com" }
-]
-maintainers = [
-    { name = "PabloCM83", email = "PabloCM83@gmail.com" }
-]
+authors = [{ name = "PabloCM83", email = "PabloCM83@gmail.com" }]
+maintainers = [{ name = "PabloCM83", email = "PabloCM83@gmail.com" }]
 keywords = ["mcp", "llm", "automation", "currency", "eltoque"]
 requires-python = ">=3.12"
 dependencies = [
@@ -29,8 +25,10 @@ eltoque-mcp = "eltoque_mcp:app"
 
 [dependency-groups]
 dev = [
+    "pre-commit>=4.6.0",
     "pytest>=9.0.3",
     "pytest-cov>=7.1.0",
+    "pytest-xdist>=3.8.0",
     "ruff>=0.15.12",
 ]
 
@@ -62,6 +60,7 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
+    "--cov-fail-under=100",
 ]
 testpaths = ["tests"]
 python_files = "test_*.py"
@@ -72,33 +71,45 @@ junit_family = "xunit2"
 filterwarnings = [
     "error",
     # For pytest-xdist
-    'ignore::DeprecationWarning:xdist',
+    "ignore::DeprecationWarning:xdist",
 ]
 
 [tool.coverage.run]
+concurrency = ["multiprocessing"]
 parallel = true
 data_file = "coverage/.coverage"
-source = ["src/eltoque_mcp", "tests"]
-context = '${CONTEXT}'
+source = ["src/eltoque_mcp"]
+context = "${CONTEXT}"
 relative_files = true
 
 [tool.coverage.report]
 fail_under = 100
-skip_covered = true
+# skip_covered = true
 show_missing = true
+skip_empty = true
 ignore_errors = true
 precision = 2
 exclude_lines = [
     "pragma: no cover",
     "@overload",
-    'if __name__ == "__main__":',
+    "if __name__ == \"__main__\":",
+    "if self.debug:",
+    # "def __repr__",
+    # "def __str__",
     "if TYPE_CHECKING:",
+    "raise AssertionError",
     "raise NotImplementedError",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+    "__all__ = .*",
+    "__version__ = .*",
+    "__author__ = .*",
+    "__title__ = .*",
 ]
 
 [tool.mypy]
 strict = true
-plugins = ['pydantic.mypy']
+plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
 module = ["src.eltoque_mcp.*"]

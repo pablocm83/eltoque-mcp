@@ -31,14 +31,15 @@ class ISO4217Plus(str):
 
 
         class Currency(BaseModel):
-            alpha_3: ISO4217Plus
+            code: ISO4217Plus
 
 
-        cur = Currency(alpha_3='AED')
+        cur = Currency(code='AED')
         print(cur)
-        # > alpha_3='AED'
+        # > code='AED'
         ```
     """
+
     _get_currencies()
     allowed_countries_list = [country.alpha_3 for country in currencies]
     allowed_currencies = set(allowed_countries_list)
@@ -62,9 +63,7 @@ class ISO4217Plus(str):
         if currency_code not in cls.allowed_currencies:
             raise PydanticCustomError(
                 "InvalidCurrency",
-                "Invalid currency code."
-                " See https://en.wikipedia.org/wiki/ISO_4217 . "
-                "Cuban's custom codes are included.",
+                "Invalid currency code.See https://en.wikipedia.org/wiki/ISO_4217.Cuban's custom codes are included.",
             )
         return currency_code
 
@@ -106,4 +105,3 @@ class ISO4217Plus(str):
         json_schema = handler(schema)
         json_schema.update({"enum": cls.allowed_countries_list})
         return json_schema
-
